@@ -1,0 +1,16 @@
+---
+rule_type: auto
+globs: ["src/jobs/**", "src/lib/queue/**"]
+description: "Queue設計：再実行・並列度・バックオフ・アラート。"
+---
+# キュー方針
+- ワーカー並列：`transcribe=2`, `analyze=3`, `cleanup=1`（MVP目安）。
+- 失敗はバックオフ（2s→4s→8s…最大5回）。
+- 永続失敗は`jobs.status='failed'`にし、UIへ通知。
+
+# メトリクス
+- 処理時間、成功率、再試行回数を`jobs`に集計。
+
+@file ./src/lib/queue/client.ts
+@file ./src/jobs/analyze-outcome.ts
+@file ./src/jobs/analyze-feedback.ts

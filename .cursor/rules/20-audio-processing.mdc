@@ -1,0 +1,22 @@
+---
+rule_type: auto
+globs: ["src/jobs/transcribe*.ts", "src/lib/audio/*"]
+description: "音声処理規約：分割、Whisper呼び出し、リトライと課金抑制。"
+---
+# トランスクライブ規約
+- 25MB超は**ffmpegで時間分割**（例: 15分単位）。メタデータに元ファイルタイムオフセットを保持。
+- Whisper呼び出しは**指数バックオフ**。
+- 出力は`verbose_json`。**segment(start, end, text, speaker?)**を保持。
+- 音声Blobには**expiryAt**メタを付与。Queue `cleanup`で削除。
+
+# 会話分割
+- ルール順：**挨拶/終話のキーワード** > **話者切替** > **30s沈黙** > **30秒未満除外**。
+- 分割結果は`conversations(file_id, start_ms, end_ms, duration_ms, preview, raw_text)`へ。
+
+# 品質/コスト
+- 3時間/1GB級は**並列最大N=3**。キューで平準化。
+- 再実行時は**ハッシュ（blobId + chunkIndex）**で重複禁止。
+
+@file ./src/lib/audio/chunker.ts
+@file ./src/jobs/transcribe.ts
+@file ./src/jobs/cleanup.ts

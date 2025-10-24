@@ -1,0 +1,22 @@
+---
+rule_type: auto
+globs: ["src/jobs/analyze*.ts", "src/lib/llm/*"]
+description: "Gemini判定・改善分析のJSON厳格化とバッチ実行。プロンプトは90-promptsに集約。"
+---
+# 分析ジョブ
+- `analyze-outcome`: 各会話テキスト→**成果4分類** + **confidence(0-100)** + **reason** を**JSON Schema準拠**で返す。
+- `analyze-feedback`: 非成功会話のみ→**改善カテゴリ[]・問題点・改善案・優先度**を返す。
+- ひとつのファイルは**会話10件単位**の**バッチ**で呼ぶ。
+
+# JSON厳格
+- LLMには**システムプロンプトでJSONのみ**を指示。schemaは`src/lib/llm/schemas.ts`を厳守。パース失敗時は1回だけ再試行。
+
+# セキュリティ
+- テキストは**最小限（会話単位）**のみ送る。**顧客固有情報はマスク**（電話番号/氏名/会社名→トークナイズ）。
+
+@file ./src/lib/llm/client.ts
+@file ./src/lib/llm/schemas.ts
+@file ./src/jobs/analyze-outcome.ts
+@file ./src/jobs/analyze-feedback.ts
+@file ./src/lib/prompts/outcome.prompt.txt
+@file ./src/lib/prompts/feedback.prompt.txt

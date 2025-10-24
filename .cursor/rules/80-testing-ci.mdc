@@ -1,0 +1,17 @@
+---
+rule_type: auto
+globs: ["tests/**", "playwright/**", "src/**/*.test.ts"]
+description: "テスト規約：単体は必須、E2Eはアップロード→結果表示のハッピーパスを担保。"
+---
+# 単体
+- `lib/*`の純関数は**100%近い網羅率**を目標。
+
+# E2E（Playwright）
+- シナリオ：`upload -> enqueue -> job poll -> dashboard list -> detail`。
+- 大容量はモック。実ファイルは短尺で。
+
+# CI
+- PRごとに`typecheck, lint, test`必須。mainへの直接push禁止。
+
+@file ./playwright.config.ts
+@file ./tests/e2e/upload-and-analyze.spec.ts

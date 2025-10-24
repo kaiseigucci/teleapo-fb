@@ -1,0 +1,34 @@
+---
+rule_type: always
+globs: ["**/*"]
+description: "MVPアーキテクチャ原則と分割統治の方針。Vercel制約下での処理分担を強制する。"
+---
+# アーキ原則
+- **同期エンドポイントでは重い処理をしない**：Whisper/Geminiや大ファイルI/Oは**Queue/Background**へ。返却は`202 Accepted + jobId`。
+- **単一責務**：アップロード→トランスクライブ→会話分割→成果判定→改善分析→保存→集計の**各段階を疎結合**に。
+- **Idempotent**：ジョブ再実行に備え**入力→中間→出力**の各ステータスを保存（`jobs(status, step, checksum)`）。
+- **コスト/時間**：LLM呼び出しは**バッチ/並列**で最小化、Geminiは**JSON strict出力**を要求。
+- **観測性**：`console`ではなく**structured logging**（src/lib/logger.ts）を使用。
+
+# ディレクトリ方針（例）
+```
+src/
+  app/               # Next.js App Router
+    api/             # 軽量API（同期）。重い処理はQueue enqueue
+  jobs/              # Queue worker（音声→文字起こし→分割→分析）
+  lib/               # 共通（blob, supabase, logger, schema, prompts）
+  features/
+    upload/
+    transcripts/
+    conversations/
+    analytics/
+```
+
+# 禁則事項
+- Whisper/Geminiを**API Route内で直実行**しない。
+- 音声ファイルを**24時間超**保持しない。期限タグを必ず付与。
+- LLMへ**個人情報・鍵**を直接貼らない。必ずマスキング。
+
+@file ./vercel.json
+@file ./package.json
+@file ./src/lib/logger.ts

@@ -1,0 +1,21 @@
+---
+rule_type: always
+globs: ["src/lib/db/**", "prisma/**", "supabase/**"]
+description: "PostgreSQLスキーマとインデックス方針。参照整合と集計クエリのコスト最適化。"
+---
+# 主要テーブル（要旨）
+- files(id ULID, filename, duration_ms, created_at, status)
+- jobs(id ULID, file_id, step enum('transcribe','split','outcome','feedback','cleanup'), status, progress, error, created_at)
+- transcripts(id, file_id, segment_index, start_ms, end_ms, text)
+- conversations(id, file_id, start_ms, end_ms, duration_ms, preview, raw_text)
+- outcomes(id, conversation_id, category enum('APPOINTMENT','DOCUMENT_SENT','CONTACT_SUCCESS','RECEPTION_FAILED'), confidence int, reason text)
+- feedbacks(id, conversation_id, categories text[], issues text, suggestions text, priority enum('HIGH','MEDIUM','LOW'))
+
+# インデックス
+- `conversations(file_id, start_ms)`、`outcomes(category)`、`jobs(file_id, step)`
+
+# マイグレーション規約
+- Prisma or SQL直書きどちらでも**DDLはレビュー必須**。Rollback用スクリプトを同梱。
+
+@file ./supabase/migrations/0001_init.sql
+@file ./src/lib/db/queries.ts

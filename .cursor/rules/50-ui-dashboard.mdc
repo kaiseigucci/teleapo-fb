@@ -1,0 +1,16 @@
+---
+rule_type: auto
+globs: ["src/app/(dashboard)/**", "src/features/**"]
+description: "UI/UX規約：一覧→詳細の2段フロー、2秒以内表示、アクセシビリティ。"
+---
+# UI原則
+- ダッシュボード初期表示は**軽量サマリのみ取得（SWR）**。詳細は**遅延フェッチ**。
+- 成果カテゴリは絵文字 + ラベル（✅📄📞❌）。
+- 会話詳細は**話者色分け** + タイムスタンプ表示。長文は折りたたみ。
+- フィルタはクエリ同期（`?category=`）。
+
+# パフォーマンス
+- `react-window`等で仮想リスト化。CLS回避。
+
+@file ./src/features/analytics/SuccessChart.tsx
+@file ./src/app/(dashboard)/page.tsx

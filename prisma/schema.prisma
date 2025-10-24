@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ジョブ管理テーブル
+model Job {
+  id            Int         @id @default(autoincrement())
+  status        JobStatus   @default(PENDING)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  errorMessage  String?     @map("error_message") @db.Text
+  
+  audioFiles    AudioFile[]
+  
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("jobs")
+}
+
+// 音声ファイルテーブル
+model AudioFile {
+  id               Int      @id @default(autoincrement())
+  jobId            Int      @map("job_id")
+  filename         String   @db.VarChar(255)
+  originalFilename String   @map("original_filename") @db.VarChar(255)
+  fileUrl          String   @map("file_url") @db.Text
+  fileSize         BigInt   @map("file_size")
+  durationSeconds  Int?     @map("duration_seconds")
+  mimeType         String   @map("mime_type") @db.VarChar(50)
+  transcript       String?  @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+  deletedAt        DateTime? @map("deleted_at")
+  
+  job              Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  conversations    Conversation[]
+  
+  @@index([jobId])
+  @@index([createdAt(sort: Desc)])
+  @@index([deletedAt], map: "idx_audio_files_deleted_at")
+  @@map("audio_files")
+}
+
+// 会話テーブル
+model Conversation {
+  id             Int      @id @default(autoincrement())
+  audioFileId    Int      @map("audio_file_id")
+  conversationNo Int      @map("conversation_no")
+  startTimeSec   Int      @map("start_time_sec")
+  endTimeSec     Int      @map("end_time_sec")
+  durationSeconds Int     @map("duration_seconds")
+  transcript     String   @db.Text
+  speakerInfo    Json?    @map("speaker_info")
+  createdAt      DateTime @default(now()) @map("created_at")
+  
+  audioFile      AudioFile @relation(fields: [audioFileId], references: [id], onDelete: Cascade)
+  analysis       Analysis?
+  
+  @@unique([audioFileId, conversationNo])
+  @@index([audioFileId])
+  @@index([audioFileId, conversationNo])
+  @@map("conversations")
+}
+
+// 分析結果テーブル
+model Analysis {
+  id              Int         @id @default(autoincrement())
+  conversationId  Int         @unique @map("conversation_id")
+  outcome         Outcome
+  confidenceScore Decimal     @map("confidence_score") @db.Decimal(5, 2)
+  outcomeReason   String?     @map("outcome_reason") @db.Text
+  improvements    Json?
+  createdAt       DateTime    @default(now()) @map("created_at")
+  
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  @@index([conversationId])
+  @@index([outcome])
+  @@map("analyses")
+}
+
+// Enums
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum Outcome {
+  APPOINTMENT
+  DOCUMENT_SENT
+  CONTACT_SUCCESS
+  RECEPTION_FAILED
+}

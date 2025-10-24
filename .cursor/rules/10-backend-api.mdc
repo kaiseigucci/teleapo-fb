@@ -1,0 +1,21 @@
+---
+rule_type: auto
+globs: ["src/app/api/**/*.ts", "src/app/api/**/*.tsx"]
+description: "API設計規約：同期は軽量、重い処理はQueueに積む。型安全＆OpenAPI記述を維持。"
+---
+# HTTPポリシー
+- **POST /api/upload**：BlobへアップロードURLを発行。完了後に**/api/analyze/enqueue**にジョブ投入。
+- **POST /api/analyze/enqueue**：`{blobUrl, filename}` → Queue `transcribe` にエンキュー。
+- **GET /api/jobs/:id**：ジョブ進捗（step, progress, error）。
+- **GET /api/files**：分析済み一覧。**ペジネーション**必須。
+- **GET /api/files/:id/summary**：集計サマリ。
+- **GET /api/conversations?fileId=...&category=...**：フィルタ取得。
+
+# 実装規約
+- 返却は必ず`{ ok, data?, error? }`。zodで**入出力バリデーション**。
+- エラーは`logger.error({ route, err, jobId })`。メッセージは**ユーザー無害化**。
+- 25MB超のファイルを**APIで受け取らない**（署名URL直PUT）。
+
+@file ./src/lib/openapi.ts
+@file ./src/app/api/analyze/enqueue/route.ts
+@file ./src/app/api/jobs/[id]/route.ts

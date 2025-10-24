@@ -1,0 +1,39 @@
+---
+rule_type: always
+globs: ["src/lib/prompts/**"]
+description: "LLMプロンプト方針：JSON固定・日本の電話文化・営業文脈。"
+---
+# 共通
+- **日本の電話応対**における敬語・婉曲表現を理解前提。
+- **出力はJSONのみ**。余計な文章を禁止。
+
+# 成果判定（outcome）JSON Schema（抜粋）
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "category": {"enum": ["APPOINTMENT","DOCUMENT_SENT","CONTACT_SUCCESS","RECEPTION_FAILED"]},
+    "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
+    "reason": {"type": "string", "maxLength": 500}
+  },
+  "required": ["category","confidence","reason"]
+}
+```
+
+# 改善分析（feedback）JSON Schema（抜粋）
+```json
+{
+  "type": "object",
+  "properties": {
+    "categories": {"type": "array", "items": {"enum": ["OPENING","DISCOVERY","PITCH","OBJECTION","CLOSING","TONE","OTHER"]}},
+    "issues": {"type": "string", "maxLength": 800},
+    "suggestions": {"type": "string", "maxLength": 800},
+    "priority": {"enum": ["HIGH","MEDIUM","LOW"]}
+  },
+  "required": ["categories","issues","suggestions","priority"]
+}
+```
+
+@file ./src/lib/prompts/outcome.prompt.txt
+@file ./src/lib/prompts/feedback.prompt.txt
