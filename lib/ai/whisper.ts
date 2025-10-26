@@ -28,12 +28,12 @@ export interface WhisperResponse {
 /**
  * OpenAI Whisper APIで音声を文字起こし
  * 
- * @param audioFile - 音声ファイル（File または Buffer）
+ * @param audioFile - 音声ファイル（File）
  * @param options - オプション設定
  * @returns 文字起こし結果
  */
 export async function transcribeAudio(
-  audioFile: File | Buffer,
+  audioFile: File,
   options: {
     filename?: string
     language?: string
@@ -41,7 +41,7 @@ export async function transcribeAudio(
 ): Promise<WhisperResponse> {
   try {
     const response = await openai.audio.transcriptions.create({
-      file: audioFile,
+      file: audioFile as any, // OpenAI SDKの型定義の問題を回避
       model: 'whisper-1',
       language: options.language || 'ja',
       response_format: 'verbose_json',

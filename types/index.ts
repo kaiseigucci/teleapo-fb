@@ -9,7 +9,7 @@ export type Outcome =
 
 export type ImprovementPriority = '高' | '中' | '低'
 
-export type ImprovementCategory = 
+export type ImprovementCategoryType = 
   | '冒頭トーク'
   | 'ヒアリング'
   | '提案・訴求'
@@ -20,7 +20,7 @@ export type ImprovementCategory =
 
 // 改善点の型定義
 export interface ImprovementCategory {
-  category: ImprovementCategory
+  category: ImprovementCategoryType
   priority: ImprovementPriority
   problem: string
   suggestion: string

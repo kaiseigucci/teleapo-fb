@@ -94,7 +94,7 @@ export async function processAudioFile(audioFileId: number): Promise<void> {
           endTimeSec: conv.endTimeSec,
           durationSeconds: conv.durationSeconds,
           transcript: conv.transcript,
-          speakerInfo: null, // TODO: 話者情報の抽出
+          speakerInfo: undefined, // TODO: 話者情報の抽出
         },
       })
     }
