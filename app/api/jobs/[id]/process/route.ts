@@ -2,6 +2,9 @@ import { NextRequest } from 'next/server'
 import { processAudioFile } from '@/lib/workers/process-audio'
 import { successResponse, errorResponse, ErrorCodes } from '@/lib/api/response'
 
+// API Routeは常に動的レンダリング
+export const dynamic = 'force-dynamic'
+
 /**
  * POST /api/jobs/:id/process
  * ジョブの処理を開始する（手動トリガー）

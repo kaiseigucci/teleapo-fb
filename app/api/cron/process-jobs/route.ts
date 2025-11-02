@@ -3,6 +3,9 @@ import { prisma } from '@/lib/db/prisma'
 import { processAudioFile } from '@/lib/workers/process-audio'
 import { successResponse, errorResponse } from '@/lib/api/response'
 
+// API Routeは常に動的レンダリング
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/cron/process-jobs
  * 
